@@ -3,6 +3,30 @@ from .auto import ObjectIdAutoField
 from .duration import register_duration_field
 from .embedded_model import EmbeddedModelField
 from .embedded_model_array import EmbeddedModelArrayField
+from .encryption import (
+    EncryptedBigIntegerField,
+    EncryptedBinaryField,
+    EncryptedBooleanField,
+    EncryptedCharField,
+    EncryptedDateField,
+    EncryptedDateTimeField,
+    EncryptedDecimalField,
+    EncryptedEmailField,
+    EncryptedFieldMixin,
+    EncryptedFloatField,
+    EncryptedGenericIPAddressField,
+    EncryptedIntegerField,
+    EncryptedPositiveBigIntegerField,
+    EncryptedPositiveIntegerField,
+    EncryptedPositiveSmallIntegerField,
+    EncryptedSmallIntegerField,
+    EncryptedTextField,
+    EncryptedTimeField,
+    EncryptedURLField,
+    EqualityQuery,
+    RangeQuery,
+    has_encrypted_fields,
+)
 from .json import register_json_field
 from .objectid import ObjectIdField
 from .polymorphic_embedded_model import PolymorphicEmbeddedModelField
@@ -12,10 +36,32 @@ __all__ = [
     "ArrayField",
     "EmbeddedModelArrayField",
     "EmbeddedModelField",
+    "EncryptedBigIntegerField",
+    "EncryptedBinaryField",
+    "EncryptedBooleanField",
+    "EncryptedCharField",
+    "EncryptedDateField",
+    "EncryptedDateTimeField",
+    "EncryptedDecimalField",
+    "EncryptedEmailField",
+    "EncryptedFieldMixin",
+    "EncryptedFloatField",
+    "EncryptedGenericIPAddressField",
+    "EncryptedIntegerField",
+    "EncryptedPositiveBigIntegerField",
+    "EncryptedPositiveIntegerField",
+    "EncryptedPositiveSmallIntegerField",
+    "EncryptedSmallIntegerField",
+    "EncryptedTextField",
+    "EncryptedTimeField",
+    "EncryptedURLField",
+    "EqualityQuery",
     "ObjectIdAutoField",
     "ObjectIdField",
     "PolymorphicEmbeddedModelArrayField",
     "PolymorphicEmbeddedModelField",
+    "RangeQuery",
+    "has_encrypted_fields",
     "register_fields",
 ]
 
