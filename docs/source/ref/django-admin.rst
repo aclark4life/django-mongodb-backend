@@ -28,10 +28,10 @@ Available commands
         Defaults to ``default``.
 
 
-``get_encrypted_fields_map``
+``showschemamap``
 ----------------------------
 
-.. django-admin:: get_encrypted_fields_map
+.. django-admin:: showschemamap
 
     Creates a schema map for encrypted fields that can be used with
     :class:`~pymongo.encryption_options.AutoEncryptionOpts` to configure
@@ -41,5 +41,3 @@ Available commands
 
         Specifies the database to use.
         Defaults to ``default``.
-
-.. TODO: Clarify how database specified could affect output.
