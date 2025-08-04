@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pymongo
 from bson import json_util
 from bson.binary import Binary
+from django.conf import settings
 from django.core.management import call_command
 from django.db import connections, models
 from django.test import TransactionTestCase, modify_settings, override_settings
@@ -340,12 +341,13 @@ class EncryptedFieldTests(TransactionTestCase):
 
         # Test encrypted patient record in unencrypted database.
         conn_params = connections["encrypted"].get_connection_params()
+        db_name = settings.DATABASES["encrypted"]["NAME"]
         if conn_params.pop("auto_encryption_opts", False):
             # Call MongoClient instead of get_new_connection because
             # get_new_connection will return the encrypted connection
             # from the connection pool.
             with pymongo.MongoClient(**conn_params) as new_connection:
-                patientrecords = new_connection["test_encrypted"].encryption__patientrecord.find()
+                patientrecords = new_connection[db_name].encryption__patientrecord.find()
                 ssn = patientrecords[0]["ssn"]
                 self.assertTrue(isinstance(ssn, Binary))
 
