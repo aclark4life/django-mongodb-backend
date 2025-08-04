@@ -3,11 +3,12 @@ Configuring Queryable Encryption
 ================================
 
 Configuring Queryable Encryption in Django is similar to
-`configuring Queryable Encryption in Python <https://www.mongodb.com/docs/manual/core/queryable-encryption/quick-start/>`_
-but with some additional steps required for Django.
+:doc:`manual:core/queryable-encryption/quick-start` but with some additional
+steps required for Django.
 
-.. note:: This section describes how to configure server side Queryable Encryption in Django.
-    For configuration of client side Queryable Encryption, please refer to this :ref:`FAQ question <queryable-encryption>`.
+.. note:: This section describes how to configure server side Queryable
+   Encryption in Django. For configuration of client side Queryable Encryption,
+   please refer to this :ref:`FAQ question <queryable-encryption>`.
 
 Prerequisites
 -------------
@@ -19,18 +20,18 @@ you will need to install PyMongo with Queryable Encryption support::
     pip install django-mongodb-backend[encryption]
 
 .. note:: You can use Queryable Encryption on a MongoDB 7.0 or later replica
-    set or sharded cluster, but not a standalone instance.
-    `This table <https://www.mongodb.com/docs/manual/core/queryable-encryption/reference/compatibility/#std-label-qe-compatibility-reference>`_
-    shows which MongoDB server products support which Queryable Encryption mechanisms.
+   set or sharded cluster, but not a standalone instance.
+   :ref:`This table <manual:qe-compatibility-reference>` shows which MongoDB
+   server products support which Queryable Encryption mechanisms.
 
 .. _server-side-queryable-encryption-settings:
 
 Settings
 --------
 
-Queryable Encryption in Django requires the use of an additional encrypted database
-and Key Management Service (KMS) credentials as well as an encrypted database
-router. Here's how to set it up in your Django settings.
+Queryable Encryption in Django requires the use of an additional encrypted
+database and Key Management Service (KMS) credentials as well as an encrypted
+database router. Here's how to set it up in your Django settings.
 
 ::
 
@@ -73,4 +74,5 @@ router. Here's how to set it up in your Django settings.
 
     DATABASE_ROUTERS = [EncryptedRouter()]
 
-You are now ready to use server side :doc:`Queryable Encryption </topics/queryable-encryption>` in your Django project.
+You are now ready to use server side :doc:`Queryable Encryption
+</topics/queryable-encryption>` in your Django project.

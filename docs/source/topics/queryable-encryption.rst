@@ -1,8 +1,8 @@
 Queryable Encryption
 ====================
 
-Use :ref:`encrypted fields <encrypted-fields>` to store sensitive data in MongoDB
-your data using `Queryable Encryption <https://www.mongodb.com/docs/manual/core/queryable-encryption/>`_.
+Use :ref:`encrypted fields <encrypted-fields>` to store sensitive data in
+MongoDB with :doc:`manual:core/queryable-encryption`.
 
 .. _encrypted-field-example:
 
@@ -22,25 +22,11 @@ Let's consider this example::
         def __str__(self):
             return self.ssn
 
-The API is similar to that of Django's relational fields, with some
-security-related changes::
+Querying encrypted fields
+-------------------------
 
-    >>> bob = Patient(ssn="123-45-6789")
-    >>> bob.ssn
-    '123-45-6789'
-
-Represented in BSON, from an encrypted client connection, the patient data looks like this:
-
-.. code-block:: js
-
-    {
-      _id: ObjectId('68825b066fac55353a8b2b41'),
-      ssn: '123-45-6789',
-      __safeContent__: [b'\xe0)NOFB\x9a,\x08\xd7\xdd\xb8\xa6\xba$…']
-    }
-
-The ``ssn`` field is only visible from an encrypted client connection. From an unencrypted client connection,
-the patient data looks like this:
+The ``ssn`` field is only visible from an encrypted client connection. From an
+unencrypted client connection, the patient data looks like this:
 
 .. code-block:: js
 
@@ -51,17 +37,27 @@ the patient data looks like this:
 
 .. admonition:: List of encrypted fields
 
-    See the full list of :ref:`encrypted fields <encrypted-fields>` in the :doc:`Model field reference </ref/models/fields>`.
+    See the full list of :ref:`encrypted fields <encrypted-fields>` in the
+    :doc:`Model field reference </ref/models/fields>`.
 
-Querying encrypted fields
--------------------------
-
-You can query encrypted fields using a `limited set of
-query operators <https://www.mongodb.com/docs/manual/core/queryable-encryption/reference/supported-operations/#std-label-qe-supported-query-operators>`_
-which must be specified in the field definition. For example, to query the ``ssn`` field for equality, you can use the
-``EqualityQuery`` operator as shown in the example above.
+You can query encrypted fields using a
+:ref:`manual:qe-supported-query-operators` which must be specified in the
+field definition. For example, to query the ``ssn`` field for equality, you
+can use the ``EqualityQuery`` operator as shown in the example above.
 
     >>> Patient.objects.get(ssn="123-45-6789").ssn
     '123-45-6789'
 
-If the ``ssn`` field provided in the query matches the encrypted value in the database, the query will succeed.
+If the ``ssn`` field provided in the query matches the encrypted value in the
+database, the query will succeed.
+
+Represented in BSON, from an encrypted client connection, the patient data
+looks like this:
+
+.. code-block:: js
+
+    {
+      _id: ObjectId('68825b066fac55353a8b2b41'),
+      ssn: '123-45-6789',
+      __safeContent__: [b'\xe0)NOFB\x9a,\x08\xd7\xdd\xb8\xa6\xba$…']
+    }
