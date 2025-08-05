@@ -58,41 +58,40 @@ see :ref:`configuring-database-routers-setting`.
 Queryable Encryption
 ====================
 
-What about client side configuration?
+What about client-side configuration?
 -------------------------------------
 
 In the :doc:`Queryable Encryption how-to guide <howto/queryable-encryption>`,
-server side Queryable Encryption configuration is covered.
+server-side Queryable Encryption configuration is covered.
 
-Client side Queryable Encryption configuration requires that the entire schema
-for encrypted fields is known at the time of client connection.
+Client side Queryable Encryption configuration requires that the entire
+encrypted fields map be known at the time of client connection.
 
-Schema Map
-~~~~~~~~~~
+Encrypted fields map
+~~~~~~~~~~~~~~~~~~~~
 
 In addition to the
 :ref:`settings described in the how-to guide <server-side-queryable-encryption-settings>`,
-you will need to provide a ``schema_map`` to the ``AutoEncryptionOpts``.
+you will need to provide a ``encrypted_fields_map`` to the
+``AutoEncryptionOpts``.
 
 Fortunately, this is easy to do with Django MongoDB Backend. You can use
-the ``showfieldsmap`` management command to generate the schema map
+the ``createencryptedfieldsmap`` management command to generate the schema map
 for your encrypted fields, and then use the results in your settings.
 
-To generate the schema map, run the following command in your Django project:
-::
+To generate the encrypted fields map, run the following command in your Django
+project::
 
-    python manage.py showfieldsmap
+    python manage.py createencryptedfieldsmap
 
-.. note:: The ``showfieldsmap`` command is only available if you have the
-    ``django_mongodb_backend`` app included in the :setting:`INSTALLED_APPS`
-    setting.
+.. note:: The ``createencryptedfieldsmap`` command is only available if you
+   have the ``django_mongodb_backend`` app included in the
+   :setting:`INSTALLED_APPS` setting.
 
 Settings
 ~~~~~~~~
 
-Now include the generated schema map in your Django settings.
-
-::
+Now include the generated schema map in your Django settings::
 
     …
     DATABASES["encrypted"] = {
@@ -100,7 +99,7 @@ Now include the generated schema map in your Django settings.
         "OPTIONS": {
             "auto_encryption_opts": AutoEncryptionOpts(
                 …
-                schema_map= {
+                encrypted_fields_map = {
                     "encryption__patientrecord": {
                         "fields": [
                             {
@@ -119,4 +118,6 @@ Now include the generated schema map in your Django settings.
         …
     }
 
-You are now ready to use client side :doc:`Queryable Encryption </topics/queryable-encryption>` in your Django project.
+You are now ready to use client-side
+:doc:`Queryable Encryption </topics/queryable-encryption>`
+in your Django project.

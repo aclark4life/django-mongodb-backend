@@ -28,10 +28,10 @@ Available commands
         Defaults to ``default``.
 
 
-``showfieldsmap``
+``createencryptedfieldsmap``
 ----------------------------
 
-.. django-admin:: showfieldsmap
+.. django-admin:: createencryptedfieldsmap
 
     Creates an encrypted fields map that can be used with `encrypted_fields_map`
     in :class:`~pymongo.encryption_options.AutoEncryptionOpts` to configure

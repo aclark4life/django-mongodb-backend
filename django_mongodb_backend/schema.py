@@ -5,8 +5,9 @@ from django.db.models import Index, UniqueConstraint
 from pymongo.encryption import ClientEncryption
 from pymongo.operations import SearchIndexModel
 
-from .fields import EmbeddedModelField, has_encrypted_fields
+from .fields import EmbeddedModelField
 from .indexes import SearchIndex
+from .model_utils import has_encrypted_fields
 from .query import wrap_database_errors
 from .utils import OperationCollector
 
@@ -432,51 +433,50 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         db_table = model._meta.db_table
         if has_encrypted_fields(model):
             client = self.connection.connection
-            options = client._options
-            ae = getattr(options, "auto_encryption_opts", None)
-            if not ae:
+            auto_encryption_opts = getattr(client._options, "auto_encryption_opts", None)
+            if not auto_encryption_opts:
                 raise ImproperlyConfigured(
-                    "Encrypted fields found but the connection does not have "
-                    "auto encryption options set. Please set `auto_encryption_opts` "
+                    "Encrypted fields found but "
+                    "DATABASES[[self.connection.alias}]['OPTIONS'] is missing "
+                    "auto_encryption_opts. Please set `auto_encryption_opts` "
                     "in the connection settings."
                 )
-            encrypted_fields_map = getattr(ae, "_encrypted_fields_map", None)
+            encrypted_fields_map = getattr(auto_encryption_opts, "_encrypted_fields_map", None)
             if not encrypted_fields_map:
-                encrypted_fields_map = {}
-                ce = ClientEncryption(
-                    ae._kms_providers,
-                    ae._key_vault_namespace,
-                    client,
-                    client.codec_options,
+                encrypted_fields_map = self._get_encrypted_fields_map(
+                    model, client, auto_encryption_opts
                 )
-                fields = self._get_encrypted_fields_map(model)
-                kms_provider = router.kms_provider(model)
-                master_key = self.connection.settings_dict.get("KMS_CREDENTIALS").get(kms_provider)
-                for field in fields["fields"]:
-                    key_alt_name = f"{db_table}_{field['path']}"
-                    data_key = ce.create_data_key(
-                        kms_provider=kms_provider,
-                        master_key=master_key,
-                        key_alt_names=[key_alt_name],
-                    )
-                    field["keyId"] = data_key
-                    encrypted_fields_map[db_table] = fields
-            db.create_collection(db_table, encryptedFields=encrypted_fields_map[db_table])
+            db.create_collection(db_table, encryptedFields=encrypted_fields_map)
         else:
             db.create_collection(db_table)
 
-    def _get_encrypted_fields_map(self, model):
+    def _get_encrypted_fields_map(self, model, client, auto_encryption_opts):
         connection = self.connection
         fields = model._meta.fields
-
-        return {
-            "fields": [
-                {
+        kms_provider = router.kms_provider(model)
+        master_key = self.connection.settings_dict.get("KMS_CREDENTIALS").get(kms_provider)
+        client_encryption = ClientEncryption(
+            auto_encryption_opts._kms_providers,
+            auto_encryption_opts._key_vault_namespace,
+            client,
+            client.codec_options,
+        )
+        db_table = model._meta.db_table
+        field_list = []
+        for field in fields:
+            if getattr(field, "encrypted", False):
+                key_alt_name = f"{db_table}_{field.column}"
+                data_key = client_encryption.create_data_key(
+                    kms_provider=kms_provider,
+                    master_key=master_key,
+                    key_alt_names=[key_alt_name],
+                )
+                field_dict = {
                     "bsonType": field.db_type(connection),
                     "path": field.column,
-                    **({"queries": field.queries} if getattr(field, "queries", None) else {}),
+                    "keyId": data_key,
                 }
-                for field in fields
-                if getattr(field, "encrypted", False)
-            ]
-        }
+                if getattr(field, "queries", None):
+                    field_dict["queries"] = field.queries
+                field_list.append(field_dict)
+        return {"fields": field_list}

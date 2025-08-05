@@ -13,11 +13,12 @@ Let's consider this example::
 
     from django.db import models
 
-    from django_mongodb_backend.fields import EncryptedCharField, EqualityQuery
+    from django_mongodb_backend.fields import EncryptedCharField
 
 
     class Patient(models.Model):
-        ssn = EncryptedCharField(max_length=11, queries=EqualityQuery())
+        ssn = EncryptedCharField(max_length=11, queries={"queryType":
+        "equality"})
 
         def __str__(self):
             return self.ssn
@@ -43,7 +44,8 @@ unencrypted client connection, the patient data looks like this:
 You can query encrypted fields using a
 :ref:`manual:qe-supported-query-operators` which must be specified in the
 field definition. For example, to query the ``ssn`` field for equality, you
-can use the ``EqualityQuery`` operator as shown in the example above.
+can use the ``{"queryType": "equality"}`` operator as shown in the example
+above.
 
     >>> Patient.objects.get(ssn="123-45-6789").ssn
     '123-45-6789'

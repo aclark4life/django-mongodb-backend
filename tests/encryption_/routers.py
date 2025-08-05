@@ -1,4 +1,4 @@
-from django_mongodb_backend.fields import has_encrypted_fields
+from django_mongodb_backend.model_utils import has_encrypted_fields
 
 
 class TestEncryptedRouter:

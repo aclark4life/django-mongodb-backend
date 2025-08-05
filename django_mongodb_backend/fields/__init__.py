@@ -23,9 +23,6 @@ from .encryption import (
     EncryptedTextField,
     EncryptedTimeField,
     EncryptedURLField,
-    EqualityQuery,
-    RangeQuery,
-    has_encrypted_fields,
 )
 from .json import register_json_field
 from .objectid import ObjectIdField
@@ -55,13 +52,10 @@ __all__ = [
     "EncryptedTextField",
     "EncryptedTimeField",
     "EncryptedURLField",
-    "EqualityQuery",
     "ObjectIdAutoField",
     "ObjectIdField",
     "PolymorphicEmbeddedModelArrayField",
     "PolymorphicEmbeddedModelField",
-    "RangeQuery",
-    "has_encrypted_fields",
     "register_fields",
 ]
 

@@ -1,6 +1,4 @@
-import importlib
 from datetime import datetime, time
-from unittest.mock import patch
 
 import pymongo
 from bson.binary import Binary
@@ -33,16 +31,6 @@ class EncryptedSlugField(EncryptedFieldMixin, models.SlugField):
     Unsupported by MongoDB when used with Queryable Encryption.
     Included in tests until fix or wontfix.
     """
-
-
-def reload_module(module):
-    """
-    Reloads a module to ensure that any changes to environment variables
-    or other settings are applied without restarting the test runner.
-    """
-    module = importlib.import_module(module)
-    importlib.reload(module)
-    return module
 
 
 @modify_settings(
@@ -85,36 +73,6 @@ class EncryptedFieldTests(TransactionTestCase):
         # TODO: Embed billing and patient_record models in patient model
         # then add tests
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        try:
-            from pymongo_auth_aws.auth import AwsCredential  # noqa: PLC0415
-        except ImportError:
-            cls.skipTest(cls, "pymongo_auth_aws not installed, skipping AWS credentials tests")
-
-        cls.patch_aws = patch(
-            "pymongocrypt.synchronous.credentials.aws_temp_credentials",
-            return_value=AwsCredential(username="", password="", token=""),
-        )
-        cls.patch_aws.start()
-
-        cls.patch_azure = patch(
-            "pymongocrypt.synchronous.credentials._get_azure_credentials", return_value={}
-        )
-        cls.patch_azure.start()
-
-        cls.patch_gcp = patch(
-            "pymongocrypt.synchronous.credentials._get_gcp_credentials", return_value={}
-        )
-        cls.patch_gcp.start()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.patch_aws.stop()
-        cls.patch_azure.stop()
-        cls.patch_gcp.stop()
-
     def test_get_encrypted_fields_map(self):
         """Test class method called by schema editor
         and management command to get encrypted fields map for
@@ -128,46 +86,52 @@ class EncryptedFieldTests(TransactionTestCase):
         in Pymongo.
         """
         expected_encrypted_fields_map = {
-            "encryption__patient": {
-                "fields": [
-                    {
-                        "bsonType": "int",
-                        "path": "patient_id",
-                        "queries": {"queryType": "equality"},
-                    },
-                    {
-                        "bsonType": "string",
-                        "path": "patient_name",
-                    },
-                    {
-                        "bsonType": "string",
-                        "path": "patient_notes",
-                        "queries": {"queryType": "equality"},
-                    },
-                    {
-                        "bsonType": "date",
-                        "path": "registration_date",
-                        "queries": {"queryType": "equality"},
-                    },
-                    {
-                        "bsonType": "bool",
-                        "path": "is_active",
-                        "queries": {"queryType": "equality"},
-                    },
-                    {
-                        "bsonType": "string",
-                        "path": "email",
-                        "queries": {"queryType": "equality"},
-                    },
-                ]
-            },
+            "fields": [
+                {
+                    "bsonType": "int",
+                    "path": "patient_id",
+                    "queries": {"queryType": "equality"},
+                },
+                {
+                    "bsonType": "string",
+                    "path": "patient_name",
+                },
+                {
+                    "bsonType": "string",
+                    "path": "patient_notes",
+                    "queries": {"queryType": "equality"},
+                },
+                {
+                    "bsonType": "date",
+                    "path": "registration_date",
+                    "queries": {"queryType": "equality"},
+                },
+                {
+                    "bsonType": "bool",
+                    "path": "is_active",
+                    "queries": {"queryType": "equality"},
+                },
+                {
+                    "bsonType": "string",
+                    "path": "email",
+                    "queries": {"queryType": "equality"},
+                },
+            ]
         }
         self.maxDiff = None
-        with connections["encrypted"].schema_editor() as editor:
-            db_table = self.patient._meta.db_table
+        connection = connections["encrypted"]
+        auto_encryption_opts = getattr(connection.connection._options, "auto_encryption_opts", None)
+        with connection.schema_editor() as editor:
+            client = connection.connection
+            encrypted_fields_map = editor._get_encrypted_fields_map(
+                self.patient, client, auto_encryption_opts
+            )
+            for field in encrypted_fields_map["fields"]:
+                # Remove data keys from the output
+                field.pop("keyId", None)
             self.assertEqual(
-                editor._get_encrypted_fields_map(self.patient),
-                expected_encrypted_fields_map[db_table],
+                encrypted_fields_map,
+                expected_encrypted_fields_map,
             )
 
     def test_set_encrypted_fields_map_in_client(self):
@@ -198,10 +162,6 @@ class EncryptedFieldTests(TransactionTestCase):
         self.assertEqual(
             PatientRecord.objects.get(ssn="123-45-6789").profile_picture, b"image data"
         )
-        with self.assertRaises(AssertionError):
-            self.assertEqual(
-                PatientRecord.objects.get(ssn="123-45-6789").profile_picture, b"bad image data"
-            )
         self.assertTrue(PatientRecord.objects.filter(patient_age__gte=40).exists())
         self.assertFalse(PatientRecord.objects.filter(patient_age__gte=200).exists())
         self.assertTrue(PatientRecord.objects.filter(weight__gte=175.0).exists())

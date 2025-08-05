@@ -434,28 +434,15 @@ they encrypt the data before storing it in the database.
 
     :class:`~django.db.models.SlugField`
 
-Query types
-~~~~~~~~~~~
-
-Django MongoDB Backend provides the following query type classes for use with
-encrypted fields.
-
-+-------------------+----------------------------------------------------------------------------------------------+
-| ``EqualityQuery`` | This query type is used for equality checks.                                                 |
-+-------------------+----------------------------------------------------------------------------------------------+
-| ``RangeQuery``    | This query type is used for range queries, such as greater than or less                      |
-|                   | than checks.                                                                                 |
-+-------------------+----------------------------------------------------------------------------------------------+
-
 EncryptedFieldMixin
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 You can use the ``EncryptedFieldMixin`` to create your own encrypted fields. This mixin
 supports the use of a ``queries`` argument in the field definition to specify query type
 for the field::
 
     from django.db import models
-    from django_mongodb_backend.fields import EncryptedFieldMixin, EqualityQuery
+    from django_mongodb_backend.fields import EncryptedFieldMixin
     from .models import MyField
 
 
@@ -465,6 +452,6 @@ for the field::
 
     class MyModel(models.Model):
         my_encrypted_field = MyEncryptedField(
-            queries=EqualityQuery(),
+            queries={"queryType": "equality"},
             # Other field options...
         )

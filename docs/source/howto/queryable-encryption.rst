@@ -6,7 +6,9 @@ Configuring Queryable Encryption in Django is similar to
 :doc:`manual:core/queryable-encryption/quick-start` but with some additional
 steps required for Django.
 
-.. note:: This section describes how to configure server side Queryable
+.. admonition:: Server-side Queryable Encryption
+
+   This section describes how to configure server side Queryable
    Encryption in Django. For configuration of client side Queryable Encryption,
    please refer to this :ref:`FAQ question <queryable-encryption>`.
 
@@ -19,7 +21,9 @@ you will need to install PyMongo with Queryable Encryption support::
 
     pip install django-mongodb-backend[encryption]
 
-.. note:: You can use Queryable Encryption on a MongoDB 7.0 or later replica
+.. admonition:: Queryable Encryption Compatibility
+
+   You can use Queryable Encryption on a MongoDB 7.0 or later replica
    set or sharded cluster, but not a standalone instance.
    :ref:`This table <manual:qe-compatibility-reference>` shows which MongoDB
    server products support which Queryable Encryption mechanisms.

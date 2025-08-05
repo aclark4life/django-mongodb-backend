@@ -2,7 +2,7 @@ from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.db.utils import ConnectionRouter
 
-from .fields import has_encrypted_fields
+from .model_utils import has_encrypted_fields
 
 
 class MongoRouter:
