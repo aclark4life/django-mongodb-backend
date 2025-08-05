@@ -432,33 +432,36 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         db_table = model._meta.db_table
         if has_encrypted_fields(model):
             client = self.connection.connection
-            options = getattr(client._options, "auto_encryption_opts", None)
-            if options is not None:
-                if encrypted_fields_map := getattr(options, "_encrypted_fields_map", None):
-                    db.create_collection(db_table, encryptedFields=encrypted_fields_map[db_table])
-                else:
-                    ce = ClientEncryption(
-                        options._kms_providers,
-                        options._key_vault_namespace,
-                        client,
-                        client.codec_options,
-                    )
-                    encrypted_fields_map = self._get_encrypted_fields_map(model)
-                    provider = router.kms_provider(model)
-                    credentials = self.connection.settings_dict.get("KMS_CREDENTIALS").get(provider)
-                    ce.create_encrypted_collection(
-                        db,
-                        db_table,
-                        encrypted_fields_map,
-                        provider,
-                        credentials,
-                    )
-            else:
+            options = client._options
+            ae = getattr(options, "auto_encryption_opts", None)
+            if not ae:
                 raise ImproperlyConfigured(
                     "Encrypted fields found but the connection does not have "
                     "auto encryption options set. Please set `auto_encryption_opts` "
                     "in the connection settings."
                 )
+            encrypted_fields_map = getattr(ae, "_encrypted_fields_map", None)
+            if not encrypted_fields_map:
+                encrypted_fields_map = {}
+                ce = ClientEncryption(
+                    ae._kms_providers,
+                    ae._key_vault_namespace,
+                    client,
+                    client.codec_options,
+                )
+                fields = self._get_encrypted_fields_map(model)
+                kms_provider = router.kms_provider(model)
+                master_key = self.connection.settings_dict.get("KMS_CREDENTIALS").get(kms_provider)
+                for field in fields["fields"]:
+                    key_alt_name = f"{db_table}_{field['path']}"
+                    data_key = ce.create_data_key(
+                        kms_provider=kms_provider,
+                        master_key=master_key,
+                        key_alt_names=[key_alt_name],
+                    )
+                    field["keyId"] = data_key
+                    encrypted_fields_map[db_table] = fields
+            db.create_collection(db_table, encryptedFields=encrypted_fields_map[db_table])
         else:
             db.create_collection(db_table)
 

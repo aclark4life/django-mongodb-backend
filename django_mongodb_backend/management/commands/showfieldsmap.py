@@ -19,11 +19,6 @@ class Command(BaseCommand):
             help="Specify the database to use for generating the encrypted"
             "fields map. Defaults to the 'default' database.",
         )
-        parser.add_argument(
-            "--kms-provider",
-            default="local",
-            help="Specify the KMS provider to use for encryption. Defaults to 'local'.",
-        )
 
     def handle(self, *args, **options):
         db = options["database"]
@@ -31,23 +26,27 @@ class Command(BaseCommand):
         encrypted_fields_map = {}
         for app_config in apps.get_app_configs():
             for model in app_config.get_models():
+                db_table = model._meta.db_table
                 if has_encrypted_fields(model):
                     fields = connection.schema_editor()._get_encrypted_fields_map(model)
                     client = connection.connection
-                    options = client._options.auto_encryption_opts
+                    ae = client._options.auto_encryption_opts
                     ce = ClientEncryption(
-                        options._kms_providers,
-                        options._key_vault_namespace,
+                        ae._kms_providers,
+                        ae._key_vault_namespace,
                         client,
                         client.codec_options,
                     )
                     kms_provider = router.kms_provider(model)
                     master_key = connection.settings_dict.get("KMS_CREDENTIALS").get(kms_provider)
                     for field in fields["fields"]:
+                        key_alt_name = f"{db_table}_{field['path']}"
                         data_key = ce.create_data_key(
                             kms_provider=kms_provider,
                             master_key=master_key,
+                            key_alt_names=[key_alt_name],
                         )
                         field["keyId"] = data_key
-                    encrypted_fields_map[model._meta.db_table] = fields
+                        field["keyAltName"] = key_alt_name
+                    encrypted_fields_map[db_table] = fields
         self.stdout.write(json_util.dumps(encrypted_fields_map, indent=2))
