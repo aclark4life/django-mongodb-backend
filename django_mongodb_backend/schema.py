@@ -450,7 +450,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         else:
             db.create_collection(db_table)
 
-    def _get_encrypted_fields_map(self, model, client, auto_encryption_opts):
+    def _get_encrypted_fields_map(self, model, client, auto_encryption_opts, from_db=False):
         connection = self.connection
         fields = model._meta.fields
         kms_provider = router.kms_provider(model)
@@ -461,16 +461,25 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
             client,
             client.codec_options,
         )
+        # Parse key vault namespace
+        key_vault_db, key_vault_coll = auto_encryption_opts._key_vault_namespace.split(".", 1)
+        key_vault_collection = client[key_vault_db][key_vault_coll]
         db_table = model._meta.db_table
         field_list = []
         for field in fields:
             if getattr(field, "encrypted", False):
                 key_alt_name = f"{db_table}_{field.column}"
-                data_key = client_encryption.create_data_key(
-                    kms_provider=kms_provider,
-                    master_key=master_key,
-                    key_alt_names=[key_alt_name],
-                )
+                if from_db:
+                    key_doc = key_vault_collection.find_one({"keyAltNames": key_alt_name})
+                    if not key_doc:
+                        raise ValueError(f"No key found in keyvault for keyAltName={key_alt_name}")
+                    data_key = key_doc["_id"]
+                else:
+                    data_key = client_encryption.create_data_key(
+                        kms_provider=kms_provider,
+                        master_key=master_key,
+                        key_alt_names=[key_alt_name],
+                    )
                 field_dict = {
                     "bsonType": field.db_type(connection),
                     "path": field.column,

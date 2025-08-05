@@ -107,25 +107,42 @@ EXPECTED_ENCRYPTED_FIELDS_MAP = {
     INSTALLED_APPS={"prepend": "django_mongodb_backend"},
 )
 @override_settings(DATABASE_ROUTERS=[TestEncryptedRouter()])
-class EncryptedFieldTests(TransactionTestCase):
+class EncryptedFieldsManagementCommandTests(TransactionTestCase):
     databases = {"default", "encrypted"}
     available_apps = ["django_mongodb_backend", "encryption_"]
 
-    def test_create_encrypted_fields_map(self):
+    def _compare_json(self, json1, json2):
+        # Remove keyIds since they are different for each run.
+        for table in json2:
+            for field in json2[table]["fields"]:
+                del field["keyId"]
+        # TODO: probably we don't need to test the entire mapping, otherwise it
+        # requires updates every time a new model or field is added!
+        self.assertEqual(json1, json2)
+
+    def test_show_encrypted_fields_map(self):
         self.maxDiff = None
         out = StringIO()
         call_command(
-            "createencryptedfieldsmap",
+            "showencryptedfieldsmap",
             "--database",
             "encrypted",
             verbosity=0,
             stdout=out,
         )
-        # Remove keyIds since they are different for each run.
         output_json = json_util.loads(out.getvalue())
-        for table in output_json:
-            for field in output_json[table]["fields"]:
-                del field["keyId"]
-        # TODO: probably we don't need to test the entire mapping, otherwise it
-        # requires updates every time a new model or field is added!
-        self.assertEqual(EXPECTED_ENCRYPTED_FIELDS_MAP, output_json)
+        self._compare_json(EXPECTED_ENCRYPTED_FIELDS_MAP, output_json)
+
+    def test_create_encrypted_fields_map(self):
+        self.maxDiff = None
+        out = StringIO()
+        call_command(
+            "showencryptedfieldsmap",
+            "--database",
+            "encrypted",
+            "--create",
+            verbosity=0,
+            stdout=out,
+        )
+        output_json = json_util.loads(out.getvalue())
+        self._compare_json(EXPECTED_ENCRYPTED_FIELDS_MAP, output_json)

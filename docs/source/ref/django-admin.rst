@@ -28,16 +28,19 @@ Available commands
         Defaults to ``default``.
 
 
-``createencryptedfieldsmap``
+``showencryptedfieldsmap``
 ----------------------------
 
-.. django-admin:: createencryptedfieldsmap
+.. django-admin:: showencryptedfieldsmap
 
-    Creates an encrypted fields map that can be used with `encrypted_fields_map`
-    in :class:`~pymongo.encryption_options.AutoEncryptionOpts` to configure
-    client-side Queryable Encryption.
+   Show mapping of models and their encrypted fields.
 
     .. django-admin-option:: --database DATABASE
 
         Specifies the database to use.
         Defaults to ``default``.
+
+    .. django-admin-option:: --create
+
+        If specified, creates the data keys instead of getting them from the
+        database.

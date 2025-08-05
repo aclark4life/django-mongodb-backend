@@ -109,15 +109,15 @@ you will need to provide a ``encrypted_fields_map`` to the
 ``AutoEncryptionOpts``.
 
 Fortunately, this is easy to do with Django MongoDB Backend. You can use
-the ``createencryptedfieldsmap`` management command to generate the schema map
+the ``showencryptedfieldsmap`` management command to generate the schema map
 for your encrypted fields, and then use the results in your settings.
 
 To generate the encrypted fields map, run the following command in your Django
 project::
 
-    python manage.py createencryptedfieldsmap
+    python manage.py showencryptedfieldsmap
 
-.. note:: The ``createencryptedfieldsmap`` command is only available if you
+.. note:: The ``showencryptedfieldsmap`` command is only available if you
    have the ``django_mongodb_backend`` app included in the
    :setting:`INSTALLED_APPS` setting.
 

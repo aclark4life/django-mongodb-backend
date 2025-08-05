@@ -18,9 +18,15 @@ class Command(BaseCommand):
             help="Specify the database to use for generating the encrypted"
             "fields map. Defaults to the 'default' database.",
         )
+        parser.add_argument(
+            "--create",
+            action="store_true",
+            help="Create the encrypted fields map.",
+        )
 
     def handle(self, *args, **options):
         db = options["database"]
+        create = options.get("create", False)
         connection = connections[db]
         client = connection.connection
         encrypted_fields_map = {}
@@ -32,9 +38,9 @@ class Command(BaseCommand):
         for app_config in apps.get_app_configs():
             for model in app_config.get_models():
                 if has_encrypted_fields(model):
-                    encrypted_fields_map[model._meta.db_table] = (
-                        connection.schema_editor()._get_encrypted_fields_map(
-                            model, client, auto_encryption_opts
-                        )
+                    from_db = not create
+                    fields = connection.schema_editor()._get_encrypted_fields_map(
+                        model, client, auto_encryption_opts, from_db=from_db
                     )
+                    encrypted_fields_map[model._meta.db_table] = fields
         self.stdout.write(json_util.dumps(encrypted_fields_map, indent=2))
