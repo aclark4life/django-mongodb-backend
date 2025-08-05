@@ -8,7 +8,7 @@ from django_mongodb_backend.fields import has_encrypted_fields
 
 
 class Command(BaseCommand):
-    help = "Generate a `schema_map` of encrypted fields for all encrypted"
+    help = "Generate an `encrypted_fields_map` of encrypted fields for all encrypted"
     " models in the database for use with `AutoEncryptionOpts` in"
     " client configuration."
 
@@ -28,7 +28,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         db = options["database"]
         connection = connections[db]
-        schema_map = {}
+        encrypted_fields_map = {}
         for app_config in apps.get_app_configs():
             for model in app_config.get_models():
                 if has_encrypted_fields(model):
@@ -49,5 +49,5 @@ class Command(BaseCommand):
                             master_key=master_key,
                         )
                         field["keyId"] = data_key
-                    schema_map[model._meta.db_table] = fields
-        self.stdout.write(json_util.dumps(schema_map, indent=2))
+                    encrypted_fields_map[model._meta.db_table] = fields
+        self.stdout.write(json_util.dumps(encrypted_fields_map, indent=2))

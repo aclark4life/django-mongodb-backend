@@ -128,7 +128,7 @@ class EncryptedFieldTests(TransactionTestCase):
         self.maxDiff = None
         out = StringIO()
         call_command(
-            "showschemamap",
+            "showfieldsmap",
             "--database",
             "encrypted",
             verbosity=0,

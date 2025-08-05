@@ -28,14 +28,14 @@ Available commands
         Defaults to ``default``.
 
 
-``showschemamap``
+``showfieldsmap``
 ----------------------------
 
-.. django-admin:: showschemamap
+.. django-admin:: showfieldsmap
 
-    Creates a schema map for encrypted fields that can be used with
-    :class:`~pymongo.encryption_options.AutoEncryptionOpts` to configure
-    an encrypted client.
+    Creates an encrypted fields map that can be used with `encrypted_fields_map`
+    in :class:`~pymongo.encryption_options.AutoEncryptionOpts` to configure
+    client-side Queryable Encryption.
 
     .. django-admin-option:: --database DATABASE
 

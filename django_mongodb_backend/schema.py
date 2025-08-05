@@ -424,7 +424,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
     def _create_collection(self, model):
         """
         Create a collection for the model with the encrypted fields. If
-        provided, use the `_schema_map` in the client's
+        provided, use the `_encrypted_fields_map` in the client's
         `auto_encryption_opts`. Otherwise, create the encrypted fields map
         with `_get_encrypted_fields_map`.
         """
@@ -434,8 +434,8 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
             client = self.connection.connection
             options = getattr(client._options, "auto_encryption_opts", None)
             if options is not None:
-                if schema_map := getattr(options, "_schema_map", None):
-                    db.create_collection(db_table, encryptedFields=schema_map[db_table])
+                if encrypted_fields_map := getattr(options, "_encrypted_fields_map", None):
+                    db.create_collection(db_table, encryptedFields=encrypted_fields_map[db_table])
                 else:
                     ce = ClientEncryption(
                         options._kms_providers,

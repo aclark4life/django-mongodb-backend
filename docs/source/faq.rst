@@ -75,15 +75,15 @@ In addition to the
 you will need to provide a ``schema_map`` to the ``AutoEncryptionOpts``.
 
 Fortunately, this is easy to do with Django MongoDB Backend. You can use
-the ``showschemamap`` management command to generate the schema map
+the ``showfieldsmap`` management command to generate the schema map
 for your encrypted fields, and then use the results in your settings.
 
 To generate the schema map, run the following command in your Django project:
 ::
 
-    python manage.py showschemamap
+    python manage.py showfieldsmap
 
-.. note:: The ``showschemamap`` command is only available if you have the
+.. note:: The ``showfieldsmap`` command is only available if you have the
     ``django_mongodb_backend`` app included in the :setting:`INSTALLED_APPS`
     setting.
 
