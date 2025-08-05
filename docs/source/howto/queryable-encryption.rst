@@ -2,15 +2,23 @@
 Configuring Queryable Encryption
 ================================
 
+.. _server-side-queryable-encryption:
+
 Configuring Queryable Encryption in Django is similar to
 :doc:`manual:core/queryable-encryption/quick-start` but with some additional
 steps required for Django.
 
-.. admonition:: Server-side Queryable Encryption
+Server-side Queryable Encryption
+--------------------------------
 
-   This section describes how to configure server side Queryable
-   Encryption in Django. For configuration of client side Queryable Encryption,
-   please refer to this :ref:`FAQ question <queryable-encryption>`.
+Server-side Queryable Encryption allows you to begin developing applications
+without needing to define the encrypted fields map at the time of connection
+to the database.
+
+.. admonition:: What about client-side Queryable Encryption?
+
+    For configuration of client-side Queryable Encryption,
+    please refer to this :ref:`see below <client-side-queryable-encryption>`.
 
 Prerequisites
 -------------
@@ -80,3 +88,69 @@ database router. Here's how to set it up in your Django settings.
 
 You are now ready to use server side :doc:`Queryable Encryption
 </topics/queryable-encryption>` in your Django project.
+
+.. _client-side-queryable-encryption:
+
+Client-side Queryable Encryption
+--------------------------------
+
+In the :ref:`section above <server-side-queryable-encryption-settings>`,
+server-side Queryable Encryption configuration is covered.
+
+Client side Queryable Encryption configuration requires that the entire
+encrypted fields map be known at the time of client connection.
+
+Encrypted fields map
+~~~~~~~~~~~~~~~~~~~~
+
+In addition to the
+:ref:`settings described in the how-to guide <server-side-queryable-encryption-settings>`,
+you will need to provide a ``encrypted_fields_map`` to the
+``AutoEncryptionOpts``.
+
+Fortunately, this is easy to do with Django MongoDB Backend. You can use
+the ``createencryptedfieldsmap`` management command to generate the schema map
+for your encrypted fields, and then use the results in your settings.
+
+To generate the encrypted fields map, run the following command in your Django
+project::
+
+    python manage.py createencryptedfieldsmap
+
+.. note:: The ``createencryptedfieldsmap`` command is only available if you
+   have the ``django_mongodb_backend`` app included in the
+   :setting:`INSTALLED_APPS` setting.
+
+Settings
+~~~~~~~~
+
+Now include the generated schema map in your Django settings::
+
+    …
+    DATABASES["encrypted"] = {
+        …
+        "OPTIONS": {
+            "auto_encryption_opts": AutoEncryptionOpts(
+                …
+                encrypted_fields_map = {
+                    "encryption__patientrecord": {
+                        "fields": [
+                            {
+                                "bsonType": "string",
+                                "path": "ssn",
+                                "queries": {"queryType": "equality"},
+                                "keyId": Binary(b"\x14F\x89\xde\x8d\x04K7\xa9\x9a\xaf_\xca\x8a\xfb&", 4),
+                            },
+                        }
+                    },
+                    # Add other models with encrypted fields here
+                },
+            ),
+            …
+        },
+        …
+    }
+
+You are now ready to use client-side
+:doc:`Queryable Encryption </topics/queryable-encryption>`
+in your Django project.
