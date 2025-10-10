@@ -5,6 +5,7 @@ from django_mongodb_backend.fields import EncryptedCharField
 
 from .models import (
     Actor,
+    ArrayModel,
     BigIntegerModel,
     Billing,
     BinaryModel,
@@ -30,6 +31,16 @@ from .models import (
     URLModel,
 )
 from .test_base import EncryptionTestCase
+
+
+class ArrayModelTests(EncryptionTestCase):
+    def setUp(self):
+        self.array_model = ArrayModel.objects.create(values=[1, 2, 3, 4, 5])
+
+    def test_array(self):
+        array_model = ArrayModel.objects.get(id=self.array_model.id)
+        self.assertEqual(array_model.values, [1, 2, 3, 4, 5])
+        # self.assertEncrypted(self.array_model, "values")
 
 
 class EmbeddedModelTests(EncryptionTestCase):

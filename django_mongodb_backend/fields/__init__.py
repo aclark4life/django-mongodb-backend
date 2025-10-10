@@ -4,6 +4,7 @@ from .duration import register_duration_field
 from .embedded_model import EmbeddedModelField
 from .embedded_model_array import EmbeddedModelArrayField
 from .encryption import (
+    EncryptedArrayField,
     EncryptedBigIntegerField,
     EncryptedBinaryField,
     EncryptedBooleanField,
@@ -36,6 +37,7 @@ __all__ = [
     "ArrayField",
     "EmbeddedModelArrayField",
     "EmbeddedModelField",
+    "EncryptedArrayField",
     "EncryptedBigIntegerField",
     "EncryptedBinaryField",
     "EncryptedBooleanField",

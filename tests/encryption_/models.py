@@ -2,6 +2,7 @@ from django.db import models
 
 from django_mongodb_backend.fields import (
     EmbeddedModelField,
+    EncryptedArrayField,
     EncryptedBigIntegerField,
     EncryptedBinaryField,
     EncryptedBooleanField,
@@ -31,6 +32,14 @@ class EncryptedTestModel(models.Model):
     class Meta:
         abstract = True
         required_db_features = {"supports_queryable_encryption"}
+
+
+# Array models
+class ArrayModel(EncryptedTestModel):
+    values = EncryptedArrayField(
+        models.IntegerField(),
+        size=5,
+    )
 
 
 # Embedded models
