@@ -17,7 +17,61 @@ DATABASES["encrypted"] = {  # noqa: F405
         ),
         "directConnection": True,
     },
-    "KMS_CREDENTIALS": {},
+    "KMS_CREDENTIALS": {
+        "aws": {
+            "kms_provider": {
+                "aws": {
+                    "accessKeyId": os.environ.get("AWS_ACCESS_KEY_ID"),
+                    "secretAccessKey": os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                }
+            },
+            "customer_master_key": {
+                "key": os.environ.get("AWS_KEY_ARN"),
+                "region": os.environ.get("AWS_KEY_REGION"),
+            },
+        },
+        "azure": {
+            "kms_provider": {
+                "azure": {
+                    "tenantId": os.environ.get("AZURE_TENANT_ID"),
+                    "clientId": os.environ.get("AZURE_CLIENT_ID"),
+                    "clientSecret": os.environ.get("AZURE_CLIENT_SECRET"),
+                }
+            },
+            "customer_master_key": {
+                "keyName": os.environ.get("AZURE_KEY_NAME"),
+                "keyVaultEndpoint": os.environ.get("AZURE_KEY_VAULT_ENDPOINT"),
+            },
+        },
+        "gcp": {
+            "kms_provider": {
+                "gcp": {
+                    "email": os.environ.get("GCP_EMAIL"),
+                    "privateKey": os.environ.get("GCP_PRIVATE_KEY"),
+                }
+            },
+            "customer_master_key": {
+                "projectId": os.environ.get("GCP_PROJECT_ID"),
+                "location": os.environ.get("GCP_LOCATION"),
+                "keyRing": os.environ.get("GCP_KEY_RING"),
+                "keyName": os.environ.get("GCP_KEY_NAME"),
+            },
+        },
+        "kmip": {
+            "kms_provider": {"kmip": {"endpoint": os.environ.get("KMIP_KMS_ENDPOINT")}},
+            "customer_master_key": {},
+            "tls_options": {
+                "kmip": {
+                    "tlsCAFile": os.environ.get("KMIP_TLS_CA_FILE"),
+                    "tlsCertificateKeyFile": os.environ.get("KMIP_TLS_CERT_FILE"),
+                }
+            },
+        },
+        "local": {
+            "kms_provider": {"local": {"key": os.urandom(96)}},
+            "customer_master_key": {},
+        },
+    },
 }
 
 
