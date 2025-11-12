@@ -93,5 +93,8 @@ class EncryptedRouter:
             return False
         return None
 
+    def kms_provider(self):
+        return "aws"
+
 
 DATABASE_ROUTERS.append(EncryptedRouter())  # noqa: F405
